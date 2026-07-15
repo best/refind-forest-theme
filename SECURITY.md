@@ -1,5 +1,7 @@
 # Security Policy
 
+[Simplified Chinese](SECURITY.zh-CN.md)
+
 This project builds and can deploy EFI boot-manager files. A defect in path,
 identity, backup, signing, or firmware-variable handling can affect the boot
 chain and may leave a machine unable to boot normally.

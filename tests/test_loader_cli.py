@@ -55,29 +55,25 @@ class LoaderCliContractTests(unittest.TestCase):
 
     def test_readme_documents_the_exact_two_phase_loader_workflow(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="ascii")
-        backup_directory_command = (
-            "sudo install -d -m 0700 -o root -g root \\\n"
-            "  /var/lib/refind-forest/loader-backups"
-        )
-        stage_command = (
-            "sudo ./bin/refind-loader stage "
-            "build/refind-loader/refind_x64.signed.efi"
-        )
+        backup_directory_command = "make loader-backup-init CONFIRM=YES"
+        stage_command = "make loader-stage CONFIRM=YES"
         for command in (
-            "./bin/refind-loader build --output build/refind-loader",
-            "sudo ./bin/refind-loader sign build/refind-loader/refind_x64.efi",
+            "make loader-build",
+            "make loader-verify",
+            "make loader-sign CONFIRM=YES",
+            "make loader-smoke",
             stage_command,
-            'sudo ./bin/refind-loader boot-next "$BACKUP_PATH"',
-            'sudo ./bin/refind-loader status "$BACKUP_PATH"',
-            'sudo ./bin/refind-loader promote "$BACKUP_PATH"',
-            'sudo ./bin/refind-loader rollback "$BACKUP_PATH"',
+            'make loader-boot-next BACKUP_PATH="$BACKUP_PATH" CONFIRM=YES',
+            'make loader-status BACKUP_PATH="$BACKUP_PATH"',
+            'make loader-promote BACKUP_PATH="$BACKUP_PATH" CONFIRM=YES',
+            'make loader-rollback BACKUP_PATH="$BACKUP_PATH" CONFIRM=YES',
         ):
             self.assertIn(command, readme)
         self.assertEqual(readme.count(backup_directory_command), 1)
         self.assertLess(
             readme.index(backup_directory_command), readme.index(stage_command)
         )
-        self.assertIn("No command reboots the machine automatically.", readme)
+        self.assertIn("No Make target reboots the machine automatically.", readme)
         self.assertIn("build/refind-theme", readme)
         self.assertIn("retained public artifact", readme)
 

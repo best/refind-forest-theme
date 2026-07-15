@@ -4,6 +4,7 @@ __pycache__/
 build/
 backups/
 .coverage
+.env
 .superpowers/
 .cache/
 .venv/

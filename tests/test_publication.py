@@ -18,7 +18,10 @@ EXPECTED_FILES = {
     "THIRD_PARTY_NOTICES.md",
     "TRADEMARKS.md",
     "CONTRIBUTING.md",
+    "CONTRIBUTING.zh-CN.md",
+    "README.zh-CN.md",
     "SECURITY.md",
+    "SECURITY.zh-CN.md",
 }
 
 DEP3_HEADER = """Description: Replace ABI-sensitive GNU-EFI SetMem calls with local stores
@@ -30,6 +33,7 @@ License: GPL-3.0-or-later and BSD-2-Clause and Expat"""
 
 PRIVATE_AND_GENERATED_IGNORES = {
     ".cache/",
+    ".env",
     ".venv/",
     "venv/",
     "dist/",
@@ -235,6 +239,166 @@ class RepositoryMetadataTests(unittest.TestCase):
         }
 
         self.assertTrue(PRIVATE_AND_GENERATED_IGNORES <= entries)
+
+
+class BilingualDocumentationTests(unittest.TestCase):
+    DOCUMENT_PAIRS = (
+        ("README.md", "README.zh-CN.md"),
+        ("CONTRIBUTING.md", "CONTRIBUTING.zh-CN.md"),
+        ("SECURITY.md", "SECURITY.zh-CN.md"),
+    )
+
+    def test_english_and_simplified_chinese_documents_link_to_each_other(
+        self,
+    ) -> None:
+        for english_name, chinese_name in self.DOCUMENT_PAIRS:
+            with self.subTest(english=english_name, chinese=chinese_name):
+                english = (PROJECT_ROOT / english_name).read_text(encoding="ascii")
+                chinese = (PROJECT_ROOT / chinese_name).read_text(encoding="utf-8")
+                self.assertIn(f"[Simplified Chinese]({chinese_name})", english)
+                self.assertIn(f"[English]({english_name})", chinese)
+
+    def test_chinese_readme_preserves_build_and_firmware_safety_contract(
+        self,
+    ) -> None:
+        readme = (PROJECT_ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+        normalized = " ".join(readme.split())
+
+        for phrase in (
+            "安全警告",
+            "root 权限",
+            "EFI 系统分区",
+            "NVRAM",
+            "仅源代码",
+            "源码检出",
+            "Python 3.12",
+            "Python 3.14",
+            "GPL-3.0-or-later",
+            "CC-BY-SA-4.0",
+            "/etc/refind.d/keys/refind_local.key",
+            "/etc/refind.d/keys/refind_local.crt",
+            "签名密钥",
+            "证书",
+            "不会生成、注册或分发签名密钥或证书",
+            "不会自动重启",
+            "非官方",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, normalized)
+        self.assertNotIn("CERTIFICATE_SHA256", readme)
+
+    def test_chinese_contribution_policy_preserves_privacy_and_dco_contract(
+        self,
+    ) -> None:
+        document = (PROJECT_ROOT / "CONTRIBUTING.zh-CN.md").read_text(
+            encoding="utf-8"
+        )
+        normalized = " ".join(document.split())
+
+        for phrase in (
+            "测试",
+            "凭据",
+            "机器快照",
+            "EFI 系统分区",
+            "NVRAM",
+            "Developer Certificate of Origin",
+            "Signed-off-by:",
+            "视觉素材",
+            "权利",
+            "https://developercertificate.org/",
+            "git commit -s",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, normalized)
+
+    def test_chinese_security_policy_keeps_private_reporting_requirements(
+        self,
+    ) -> None:
+        document = (PROJECT_ROOT / "SECURITY.zh-CN.md").read_text(
+            encoding="utf-8"
+        )
+        normalized = " ".join(document.split())
+
+        for phrase in (
+            "GitHub 私密漏洞报告",
+            "公开 issue",
+            "启动链",
+            "https://github.com/best/refind-forest-theme/security/advisories/new",
+            "私钥",
+            "证书",
+            "NVRAM",
+            "磁盘标识",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, normalized)
+        self.assertNotIn("mailto:", document)
+
+    def test_user_and_contributor_workflows_are_expressed_through_make(
+        self,
+    ) -> None:
+        readmes = {
+            "README.md": (PROJECT_ROOT / "README.md").read_text(encoding="ascii"),
+            "README.zh-CN.md": (PROJECT_ROOT / "README.zh-CN.md").read_text(
+                encoding="utf-8"
+            ),
+        }
+        contributing = {
+            "CONTRIBUTING.md": (PROJECT_ROOT / "CONTRIBUTING.md").read_text(
+                encoding="ascii"
+            ),
+            "CONTRIBUTING.zh-CN.md": (
+                PROJECT_ROOT / "CONTRIBUTING.zh-CN.md"
+            ).read_text(encoding="utf-8"),
+        }
+
+        readme_commands = (
+            "make help",
+            "make setup",
+            "make test",
+            "make build",
+            "make deterministic",
+            "make audit",
+            "make check",
+            "make theme-install",
+            "make theme-verify",
+            "make theme-switch",
+            "make theme-rollback",
+            "make loader-build",
+            "make loader-verify",
+            "make loader-sign",
+            "make loader-backup-init",
+            "make loader-smoke",
+            "make loader-stage",
+            "make loader-status",
+            "make loader-boot-next",
+            "make loader-promote",
+            "make loader-rollback",
+        )
+        for relative, document in readmes.items():
+            for command in readme_commands:
+                with self.subTest(relative=relative, command=command):
+                    self.assertIn(command, document)
+
+        for relative, document in contributing.items():
+            for command in ("make help", "make setup", "make test", "make check"):
+                with self.subTest(relative=relative, command=command):
+                    self.assertIn(command, document)
+
+        forbidden_direct_invocations = (
+            "./bin/refind-forest",
+            "./bin/refind-loader",
+            "PYTHONPATH=src",
+            "python -m unittest",
+            "python3 -m unittest",
+            "python -m pip",
+            "python3 -m pip",
+            "python -m venv",
+            "python3 -m venv",
+        )
+        for relative, document in {**readmes, **contributing}.items():
+            for invocation in forbidden_direct_invocations:
+                with self.subTest(relative=relative, invocation=invocation):
+                    self.assertNotIn(invocation, document)
 
 
 class PublicTreeAuditTests(unittest.TestCase):
@@ -461,7 +625,9 @@ class PublicTreeAuditTests(unittest.TestCase):
 
 
 class RepositoryAutomationTests(unittest.TestCase):
-    def test_ci_workflow_is_read_only_and_runs_the_publication_gates(self) -> None:
+    def test_ci_workflow_is_read_only_and_delegates_project_steps_to_make(
+        self,
+    ) -> None:
         workflow = (PROJECT_ROOT / ".github/workflows/ci.yml").read_text(
             encoding="ascii"
         )
@@ -475,16 +641,21 @@ class RepositoryAutomationTests(unittest.TestCase):
             "actions/checkout@v7",
             "actions/setup-python@v6",
             "python-version: ${{ matrix.python-version }}",
-            "python -m pip install --upgrade pip",
-            "python -m pip install -e .",
-            "PYTHONPATH=src python -W error -m unittest discover -s tests -v",
-            "./bin/refind-forest build --output build/refind-theme",
-            "python tools/check_public_tree.py .",
-            "git diff --check",
+            "make setup",
+            "make ci",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, workflow)
         self.assertNotIn("contents: write", workflow)
+        for direct_command in (
+            "python -m pip install -e .",
+            "unittest discover",
+            "./bin/refind-forest",
+            "tools/check_public_tree.py",
+            "git diff --check",
+        ):
+            with self.subTest(direct_command=direct_command):
+                self.assertNotIn(direct_command, workflow)
 
     def test_issue_forms_collect_sanitized_reproduction_details(self) -> None:
         required_phrases = (

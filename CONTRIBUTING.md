@@ -1,25 +1,35 @@
 # Contributing
 
+[Simplified Chinese](CONTRIBUTING.zh-CN.md)
+
 Contributions are welcome when they keep the project reproducible, reviewable,
 and safe to test without privileged access to real firmware or disks.
 
 ## Development setup
 
 Work from a source checkout. The patch and artwork inputs used by the build
-commands are not installed as wheel package data.
+commands are not installed as wheel package data. Python 3.12 or newer with
+`venv` support is required; Debian and Ubuntu users may need the matching
+`python3-venv` package.
 
 ```bash
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -e .
-PYTHONPATH=src python -W error -m unittest discover -s tests -v
+make setup
+make test
+make check
 ```
+
+Make selects the project `.venv` interpreter, so shell activation is not
+required. Run `make help` to inspect the available targets.
 
 Every change must include or update focused tests. Run the affected modules
 with warnings treated as errors, then run the full suite before submitting a
 pull request. Tests must use temporary directories, synthetic identifiers, and
 mocked firmware interfaces. They must not require root access or touch a real
 EFI System Partition (ESP), block device, or NVRAM.
+
+`make ci` runs the continuous-integration aggregate. Use `make audit` and
+`make deterministic` separately when investigating public-tree or
+reproducibility failures.
 
 ## Sensitive data
 
