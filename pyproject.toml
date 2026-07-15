@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "refind-forest-theme"
+version = "0.1.0"
+description = "Two rEFInd Forest themes with reproducible loader verification tooling"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE", "LICENSES/*.txt"]
+authors = [{ name = "best" }]
+requires-python = ">=3.12"
+dependencies = ["Pillow>=12,<13"]
+classifiers = [
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.14",
+]
+
+[project.urls]
+Repository = "https://github.com/best/refind-forest-theme"
+Issues = "https://github.com/best/refind-forest-theme/issues"

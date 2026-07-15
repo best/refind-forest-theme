@@ -1,0 +1,68 @@
+name: Feature request
+description: Propose a focused improvement to the theme or tooling
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Provide only sanitized information. Do not attach EFI variables, keys,
+        certificates, disk identifiers, or private boot configuration.
+
+  - type: input
+    id: project-version
+    attributes:
+      label: Project version
+      description: Release, tag, or commit identifier used for this request.
+    validations:
+      required: true
+
+  - type: input
+    id: firmware-refind-version
+    attributes:
+      label: Firmware / rEFInd version
+      description: Firmware vendor/version and the installed rEFInd version.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Explain the current workflow or limitation step by step.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Describe the outcome the proposed feature should provide.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Describe the current behavior or missing capability.
+    validations:
+      required: true
+
+  - type: textarea
+    id: sanitized-logs
+    attributes:
+      label: Sanitized logs
+      description: Add minimal sanitized context or logs, or state that none apply.
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: privacy-confirmation
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I removed EFI variables, keys, certificates, disk identifiers, and private boot configuration.
+          required: true
